@@ -1,0 +1,225 @@
+import requests, json, re, os
+from bs4 import BeautifulSoup
+
+defualtPath = os.path.join(
+    os.path.expanduser("~"), "Desktop/jobs"
+)  # default path in desktop
+if not os.path.exists(defualtPath):  # create a folder to collect the json or photos
+    os.mkdir(defualtPath)
+
+
+def extract_job_details(jobDetails):
+    location = re.search(r"الموقع\n\n(.*?)\n\n", jobDetails)
+    work_schedule = re.search(r"الدوام\n(.*?)\n\n", jobDetails)
+    availability = re.search(r"متاحة لـ\n(.*?)\n\n", jobDetails)
+    experience = re.search(r"الخبرة\n(.*?)\n\n", jobDetails)
+    gender = re.search(r"الجنس\n(.*?)\n\n", jobDetails)
+    education = re.search(r"الدرجة العلمية\n(.*?)\n\n", jobDetails)
+    deadline = re.search(r"أخر موعد\n(.*?)\n", jobDetails)
+
+    job_details = {
+        "Location": location.group(1) if location else "",
+        "Work Schedule": work_schedule.group(1) if work_schedule else "",
+        "Availability": availability.group(1) if availability else "",
+        "Experience": experience.group(1) if experience else "",
+        "Gender": gender.group(1) if gender else "",
+        "Education": education.group(1) if education else "",
+        "Deadline": deadline.group(1) if deadline else "",
+    }
+
+    return job_details
+
+
+def jobzatySearch(
+    keywords: list,
+    pages: int = 1,
+    folderPath: str = defualtPath,
+):
+    jobData = []
+    jsonFilePath = os.path.join(folderPath, "jobs by search.json")
+    for job in keywords:
+        i = 0
+        for page in range(pages):
+            jobzaty = f"https://www.jobzaty.com/search_jobs?search={job}&country_id%5B%5D=191&page={page+1}"
+            requestJobzaty = requests.get(jobzaty)
+            htmlParser = BeautifulSoup(requestJobzaty.text, "html.parser")
+
+            for div in htmlParser.find_all("div", {"class": "jobint"}):
+                i += 1
+                title = div.find("a")["title"]
+                jobLink = div.find("a")["href"]
+                img = div.find("img")
+                companyName = div.find("div", {"class": "company"})
+                city = div.find("span", {"class": "newCity"})
+                nationality = div.find("label", {"class": "partTime"})
+                fullTime = div.find("label", {"class": "fulltime"})
+
+                requestWebPageData = requests.get(jobLink)
+                htmlWebPageDataParser = BeautifulSoup(
+                    requestWebPageData.text, "html.parser"
+                )
+                header = htmlWebPageDataParser.find_all("div", {"class": "jobinfo"})
+                date = header[0].find("div", {"class": "ptext"})
+                jobDetailsHeader = htmlWebPageDataParser.find(
+                    "div", {"class": "job-header one"}
+                )
+                jobDetails = jobDetailsHeader.find("ul", {"class": "jbdetail"})
+                getJobDetails = extract_job_details(jobDetails.text)
+
+                pageContent = htmlWebPageDataParser.find("div", {"class": "contentbox"})
+
+                plainPageContent = pageContent.find("p")
+                jobs = [job for job in pageContent.text.split("\n") if job != ""]
+
+                applicationMethod = plainPageContent.find("a", {"rel": "nofollow"})[
+                    "href"
+                ]
+
+                jobData.append(
+                    {
+                        "Job": f"{job} {i}",
+                        "Job data": {
+                            "Job title": title,
+                            "Job link": jobLink,
+                            "img": img["src"],
+                            "Company name": companyName.text.rstrip(),
+                            "Location": city.text.rstrip(),
+                            "Work schedule": fullTime.text.rstrip(),
+                            "Availability": nationality.text.rstrip(),
+                            "Web page data": {
+                                "Job title": title,
+                                "Announcement date": date.text,
+                                "Company name": companyName.text.rstrip(),
+                                "Job details": getJobDetails,
+                                "Extra details": jobs,
+                                "Application method": applicationMethod,
+                            },
+                        },
+                    }
+                )
+
+        with open(jsonFilePath, "w", encoding="utf-8") as Data:
+            json.dump(jobData, Data, ensure_ascii=False)
+
+
+def jobzatyCategory(
+    folderPath: str = defualtPath,
+):
+    categories: dict = {
+        "1": "https://www.jobzaty.com/jobs/category/big-companies",
+        "2": "https://www.jobzaty.com/jobs/category/government",
+        "3": "https://www.jobzaty.com/jobs/category/information-technology",
+        "4": "https://www.jobzaty.com/jobs/category/business-development",
+        "5": "https://www.jobzaty.com/jobs/category/secretarial-clerical-front-office",
+        "6": "https://www.jobzaty.com/jobs/category/customer-support",
+        "7": "https://www.jobzaty.com/jobs/category/health-medical",
+        "8": "https://www.jobzaty.com/jobs/category/distribution-logistics",
+        "9": "https://www.jobzaty.com/jobs/category/education",
+        "10": "https://www.jobzaty.com/jobs/category/banks-job",
+        "11": "https://www.jobzaty.com/jobs/category/design",
+        "12": "https://www.jobzaty.com/jobs/category/business-management",
+        "13": "https://www.jobzaty.com/jobs/category/fresh-graduate",
+        "14": "https://www.jobzaty.com/jobs/category/jobs-for-women",
+        "15": "https://www.jobzaty.com/jobs/category/hr",
+        "16": "https://www.jobzaty.com/jobs/category/taqat",
+        "17": "https://www.jobzaty.com/jobs/category/law-legal-affairs",
+        "18": "https://www.jobzaty.com/jobs/category/public-relations",
+        "19": "https://www.jobzaty.com/jobs/category/project-management",
+        "20": "https://www.jobzaty.com/jobs/category/media-advertising",
+        "21": "https://www.jobzaty.com/jobs/category/quality-control",
+        "22": "https://www.jobzaty.com/jobs/category/data-entry",
+        "23": "https://www.jobzaty.com/jobs/category/accounts-financial-services-banking",
+        "24": "https://www.jobzaty.com/jobs/category/engineering",
+        "25": "https://www.jobzaty.com/jobs/category/marketing",
+        "26": "https://www.jobzaty.com/jobs/category/sales",
+        "27": "https://www.jobzaty.com/jobs/category/manufacturing-operations",
+        "28": "https://www.jobzaty.com/jobs/category/planning-development",
+        "29": "https://www.jobzaty.com/jobs/category/procurement-warehousing",
+        "30": "https://www.jobzaty.com/jobs/category/information-security",
+        "31": "https://www.jobzaty.com/jobs/category/training",
+        "32": "https://www.jobzaty.com/jobs/category/cybersecurity-jobs",
+        "33": "https://www.jobzaty.com/jobs",
+    }
+    chosenCategory = input(
+        "\nPlease choose a category:\n1. Big companies\n2. Government\n3. Information technology\n4. Business development\n5. Secretarial clerical front office\n6. Customer support\n7. Health medical\n8. Distribution logistics\n9. Education\n10. Banks\n11. Design\n12. Business management\n13. Fresh graduate\n14. Jobs for women\n15. HR\n16. Taqat\n17. Law legal affairs\n18. Public relations\n19. Project management\n20. Media advertising\n21. Quality control\n22. Data entry\n23. Accounts financial services banking\n24. Engineering\n25. Marketing\n26. Sales\n27. Manufacturing operations\n28. Planning development\n29. Procurement warehousing\n30. Information security\n31. training\n32. Cybersecurity jobs\n33. New jobs with no specification\n\nSelect number/numbers separated by comma: "
+    ).split(", ")
+
+    for category in chosenCategory:
+        if category not in categories:
+            print("Invalid choice. Please try again.")
+            return jobzatyCategory()
+        categoryName = (
+            str(categories.get(category))
+            .replace("https://www.jobzaty.com/jobs/category/", "")
+            .replace("https://www.jobzaty.com/", "")
+            .replace("-", " ")
+            .upper()
+        )
+        job = categories[category]
+        pages = int(input(f"Please choose number of pages for {categoryName}: "))
+        i = 0
+        jobData = []
+        jsonFilePath = os.path.join(folderPath, f"Category {categoryName}.json")
+        for page in range(pages):
+            jobzaty = f"{job}?page={page+1}"
+            requestJobzaty = requests.get(jobzaty)
+            htmlParser = BeautifulSoup(requestJobzaty.text, "html.parser")
+            for div in htmlParser.find_all("div", {"class": "jobint"}):
+                i += 1
+                title = div.find("a")["title"]
+                jobLink = div.find("a")["href"]
+                img = div.find("img")
+                companyName = div.find("div", {"class": "company"})
+                city = div.find("span", {"class": "newCity"})
+                nationality = div.find("label", {"class": "partTime"})
+                fullTime = div.find("label", {"class": "fulltime"})
+
+                requestWebPageData = requests.get(jobLink)
+                htmlWebPageDataParser = BeautifulSoup(
+                    requestWebPageData.text, "html.parser"
+                )
+                header = htmlWebPageDataParser.find_all("div", {"class": "jobinfo"})
+                date = header[0].find("div", {"class": "ptext"})
+                jobDetailsHeader = htmlWebPageDataParser.find(
+                    "div", {"class": "job-header one"}
+                )
+                jobDetails = jobDetailsHeader.find("ul", {"class": "jbdetail"})
+                getJobDetails = extract_job_details(jobDetails.text)
+
+                pageContent = htmlWebPageDataParser.find("div", {"class": "contentbox"})
+
+                plainPageContent = pageContent.find("p")
+                jobs = [job for job in pageContent.text.split("\n") if job != ""]
+
+                applicationMethod = plainPageContent.find("a", {"rel": "nofollow"})[
+                    "href"
+                ]
+
+                jobData.append(
+                    {
+                        "Category": categoryName,
+                        "Link": job,
+                        "Job data": {
+                            f"job {i}": {
+                                "Job title": title,
+                                "Job link": jobLink,
+                                "img": img["src"],
+                                "Company name": companyName.text.rstrip(),
+                                "Location": city.text.rstrip(),
+                                "Work schedule": fullTime.text.rstrip(),
+                                "Availability": nationality.text.rstrip(),
+                                "Application method": applicationMethod,
+                                "Web page data": {
+                                    "Job title": title,
+                                    "Announcement date": date.text,
+                                    "Company name": companyName.text.rstrip(),
+                                    "Job details": getJobDetails,
+                                    "Extra details": jobs,
+                                },
+                            },
+                        },
+                    }
+                )
+
+        with open(jsonFilePath, "w", encoding="utf-8") as Data:
+            json.dump(jobData, Data, ensure_ascii=False)
