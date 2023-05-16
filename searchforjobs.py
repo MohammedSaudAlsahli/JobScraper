@@ -1,11 +1,11 @@
 import requests, json, re, os
 from bs4 import BeautifulSoup
 
-defualtPath = os.path.join(
+defaultPath = os.path.join(
     os.path.expanduser("~"), "Desktop/jobs"
-)  # default path in desktop
-if not os.path.exists(defualtPath):  # create a folder to collect the json or photos
-    os.mkdir(defualtPath)
+)
+if not os.path.exists(defaultPath):
+    os.mkdir(defaultPath)
 
 
 def extract_job_details(jobDetails):
@@ -33,13 +33,16 @@ def extract_job_details(jobDetails):
 def jobzatySearch(
     keywords: list,
     pages: int = 1,
-    folderPath: str = defualtPath,
+    folderPath: str = defaultPath,
 ):
-    jobData = []
-    jsonFilePath = os.path.join(folderPath, "jobs by search.json")
+
     for job in keywords:
         i = 0
         for page in range(pages):
+            jobData = []
+            if not os.path.exists(folderPath):
+                os.mkdir(folderPath)
+            jsonFilePath = os.path.join(folderPath, f"{job} by search.json")
             jobzaty = f"https://www.jobzaty.com/search_jobs?search={job}&country_id%5B%5D=191&page={page+1}"
             requestJobzaty = requests.get(jobzaty)
             htmlParser = BeautifulSoup(requestJobzaty.text, "html.parser")
@@ -77,7 +80,7 @@ def jobzatySearch(
 
                 jobData.append(
                     {
-                        "Job": f"{job} {i}",
+                        job: i,
                         "Job data": {
                             "Job title": title,
                             "Job link": jobLink,
@@ -86,25 +89,27 @@ def jobzatySearch(
                             "Location": city.text.rstrip(),
                             "Work schedule": fullTime.text.rstrip(),
                             "Availability": nationality.text.rstrip(),
+                            "Application method": applicationMethod,
                             "Web page data": {
                                 "Job title": title,
                                 "Announcement date": date.text,
                                 "Company name": companyName.text.rstrip(),
                                 "Job details": getJobDetails,
                                 "Extra details": jobs,
-                                "Application method": applicationMethod,
                             },
                         },
                     }
                 )
-
         with open(jsonFilePath, "w", encoding="utf-8") as Data:
             json.dump(jobData, Data, ensure_ascii=False)
 
 
 def jobzatyCategory(
-    folderPath: str = defualtPath,
+    folderPath: str = defaultPath,
 ):
+    if not os.path.exists(folderPath):
+        os.mkdir(folderPath)
+
     categories: dict = {
         "1": "https://www.jobzaty.com/jobs/category/big-companies",
         "2": "https://www.jobzaty.com/jobs/category/government",
@@ -141,7 +146,7 @@ def jobzatyCategory(
         "33": "https://www.jobzaty.com/jobs",
     }
     chosenCategory = input(
-        "\nPlease choose a category:\n1. Big companies\n2. Government\n3. Information technology\n4. Business development\n5. Secretarial clerical front office\n6. Customer support\n7. Health medical\n8. Distribution logistics\n9. Education\n10. Banks\n11. Design\n12. Business management\n13. Fresh graduate\n14. Jobs for women\n15. HR\n16. Taqat\n17. Law legal affairs\n18. Public relations\n19. Project management\n20. Media advertising\n21. Quality control\n22. Data entry\n23. Accounts financial services banking\n24. Engineering\n25. Marketing\n26. Sales\n27. Manufacturing operations\n28. Planning development\n29. Procurement warehousing\n30. Information security\n31. training\n32. Cybersecurity jobs\n33. New jobs with no specification\n\nSelect number/numbers separated by comma: "
+        "\nPlease choose a category:\n1. Big companies\n2. Government\n3. Information technology\n4. Business development\n5. Secretarial clerical front office\n6. Customer support\n7. Health medical\n8. Distribution logistics\n9. Education\n10. Banks\n11. Design\n12. Business management\n13. Fresh graduate\n14. Jobs for women\n15. HR\n16. Taqat\n17. Law legal affairs\n18. Public relations\n19. Project management\n20. Media advertising\n21. Quality control\n22. Data entry\n23. Accounts financial services banking\n24. Engineering\n25. Marketing\n26. Sales\n27. Manufacturing operations\n28. Planning development\n29. Procurement warehousing\n30. Information security\n31. training\n32. Cybersecurity jobs\n33. New jobs with no specification\n\nSelect a number more separated by comma: "
     ).split(", ")
 
     for category in chosenCategory:
@@ -159,7 +164,7 @@ def jobzatyCategory(
         pages = int(input(f"Please choose number of pages for {categoryName}: "))
         i = 0
         jobData = []
-        jsonFilePath = os.path.join(folderPath, f"Category {categoryName}.json")
+        jsonFilePath = os.path.join(folderPath, f"{categoryName} Category.json")
         for page in range(pages):
             jobzaty = f"{job}?page={page+1}"
             requestJobzaty = requests.get(jobzaty)
