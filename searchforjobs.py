@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 
 defaultPath = os.path.join(
     os.path.expanduser("~"), "Desktop/jobs"
-)
-if not os.path.exists(defaultPath):
+)  # default path in desktop
+if not os.path.exists(defaultPath):  # create a folder to collect the json or photos
     os.mkdir(defaultPath)
 
 
@@ -40,7 +40,7 @@ def jobzatySearch(
         i = 0
         for page in range(pages):
             jobData = []
-            if not os.path.exists(folderPath):
+            if not os.path.exists(folderPath):  # create a folder to collect the json or photos
                 os.mkdir(folderPath)
             jsonFilePath = os.path.join(folderPath, f"{job} by search.json")
             jobzaty = f"https://www.jobzaty.com/search_jobs?search={job}&country_id%5B%5D=191&page={page+1}"
@@ -53,16 +53,13 @@ def jobzatySearch(
                 jobLink = div.find("a")["href"]
                 img = div.find("img")
                 companyName = div.find("div", {"class": "company"})
-                city = div.find("span", {"class": "newCity"})
-                nationality = div.find("label", {"class": "partTime"})
-                fullTime = div.find("label", {"class": "fulltime"})
 
                 requestWebPageData = requests.get(jobLink)
                 htmlWebPageDataParser = BeautifulSoup(
                     requestWebPageData.text, "html.parser"
                 )
                 header = htmlWebPageDataParser.find_all("div", {"class": "jobinfo"})
-                date = header[0].find("div", {"class": "ptext"})
+                announcementDate = header[0].find("div", {"class": "ptext"})
                 jobDetailsHeader = htmlWebPageDataParser.find(
                     "div", {"class": "job-header one"}
                 )
@@ -82,19 +79,14 @@ def jobzatySearch(
                     {
                         job: i,
                         "Job data": {
+                            "Company name": companyName.text.rstrip(),
                             "Job title": title,
                             "Job link": jobLink,
                             "img": img["src"],
-                            "Company name": companyName.text.rstrip(),
-                            "Location": city.text.rstrip(),
-                            "Work schedule": fullTime.text.rstrip(),
-                            "Availability": nationality.text.rstrip(),
+                            "Announcement date": announcementDate.text,
                             "Application method": applicationMethod,
+                            "Job details": getJobDetails,
                             "Web page data": {
-                                "Job title": title,
-                                "Announcement date": date.text,
-                                "Company name": companyName.text.rstrip(),
-                                "Job details": getJobDetails,
                                 "Extra details": jobs,
                             },
                         },
@@ -107,7 +99,7 @@ def jobzatySearch(
 def jobzatyCategory(
     folderPath: str = defaultPath,
 ):
-    if not os.path.exists(folderPath):
+    if not os.path.exists(folderPath):  # create a folder to collect the json or photos
         os.mkdir(folderPath)
 
     categories: dict = {
@@ -146,7 +138,7 @@ def jobzatyCategory(
         "33": "https://www.jobzaty.com/jobs",
     }
     chosenCategory = input(
-        "\nPlease choose a category:\n1. Big companies\n2. Government\n3. Information technology\n4. Business development\n5. Secretarial clerical front office\n6. Customer support\n7. Health medical\n8. Distribution logistics\n9. Education\n10. Banks\n11. Design\n12. Business management\n13. Fresh graduate\n14. Jobs for women\n15. HR\n16. Taqat\n17. Law legal affairs\n18. Public relations\n19. Project management\n20. Media advertising\n21. Quality control\n22. Data entry\n23. Accounts financial services banking\n24. Engineering\n25. Marketing\n26. Sales\n27. Manufacturing operations\n28. Planning development\n29. Procurement warehousing\n30. Information security\n31. training\n32. Cybersecurity jobs\n33. New jobs with no specification\n\nSelect a number more separated by comma: "
+        "\nPlease choose a category:\n1. Big companies\n2. Government\n3. Information technology\n4. Business development\n5. Secretarial clerical front office\n6. Customer support\n7. Health medical\n8. Distribution logistics\n9. Education\n10. Banks\n11. Design\n12. Business management\n13. Fresh graduate\n14. Jobs for women\n15. HR\n16. Taqat\n17. Law legal affairs\n18. Public relations\n19. Project management\n20. Media advertising\n21. Quality control\n22. Data entry\n23. Accounts financial services banking\n24. Engineering\n25. Marketing\n26. Sales\n27. Manufacturing operations\n28. Planning development\n29. Procurement warehousing\n30. Information security\n31. training\n32. Cybersecurity jobs\n33. New jobs with no specification\n\nSelect number/numbers separated by comma: "
     ).split(", ")
 
     for category in chosenCategory:
@@ -175,16 +167,13 @@ def jobzatyCategory(
                 jobLink = div.find("a")["href"]
                 img = div.find("img")
                 companyName = div.find("div", {"class": "company"})
-                city = div.find("span", {"class": "newCity"})
-                nationality = div.find("label", {"class": "partTime"})
-                fullTime = div.find("label", {"class": "fulltime"})
 
                 requestWebPageData = requests.get(jobLink)
                 htmlWebPageDataParser = BeautifulSoup(
                     requestWebPageData.text, "html.parser"
                 )
                 header = htmlWebPageDataParser.find_all("div", {"class": "jobinfo"})
-                date = header[0].find("div", {"class": "ptext"})
+                announcementDate = header[0].find("div", {"class": "ptext"})
                 jobDetailsHeader = htmlWebPageDataParser.find(
                     "div", {"class": "job-header one"}
                 )
@@ -210,15 +199,10 @@ def jobzatyCategory(
                                 "Job link": jobLink,
                                 "img": img["src"],
                                 "Company name": companyName.text.rstrip(),
-                                "Location": city.text.rstrip(),
-                                "Work schedule": fullTime.text.rstrip(),
-                                "Availability": nationality.text.rstrip(),
+                                "Announcement date": announcementDate.text,
                                 "Application method": applicationMethod,
+                                "Job details": getJobDetails,
                                 "Web page data": {
-                                    "Job title": title,
-                                    "Announcement date": date.text,
-                                    "Company name": companyName.text.rstrip(),
-                                    "Job details": getJobDetails,
                                     "Extra details": jobs,
                                 },
                             },
