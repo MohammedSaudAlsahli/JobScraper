@@ -2,7 +2,7 @@ import requests, json, re, os, datetime
 from bs4 import BeautifulSoup
 
 defaultPath = os.path.join(
-    os.path.expanduser("~"), "Desktop/Python/folder-jobs"
+    os.path.expanduser("~"), "Desktop/jobs"
 )  # default path in desktop
 if not os.path.exists(defaultPath):  # create a folder to collect the json or photos
     os.mkdir(defaultPath)
