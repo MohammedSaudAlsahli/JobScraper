@@ -1,12 +1,12 @@
-import requests, json, re, os
+import requests, json, re, os, datetime
 from bs4 import BeautifulSoup
 
 defaultPath = os.path.join(
-    os.path.expanduser("~"), "Desktop/jobs"
+    os.path.expanduser("~"), "Desktop/Python/folder-jobs"
 )  # default path in desktop
 if not os.path.exists(defaultPath):  # create a folder to collect the json or photos
     os.mkdir(defaultPath)
-
+currentTimeString = datetime.datetime.now().strftime("%d-%m %H:%M")
 
 def extract_job_details(jobDetails):
     location = re.search(r"الموقع\n\n(.*?)\n\n", jobDetails)
@@ -31,18 +31,17 @@ def extract_job_details(jobDetails):
 
 
 def jobzatySearch(
-    keywords: list,
+    query: list,
     pages: int = 1,
     folderPath: str = defaultPath,
 ):
-
-    for job in keywords:
+    for job in query:
         i = 0
         for page in range(pages):
             jobData = []
-            if not os.path.exists(folderPath):  # create a folder to collect the json or photos
+            if not os.path.exists(folderPath):
                 os.mkdir(folderPath)
-            jsonFilePath = os.path.join(folderPath, f"{job} by search.json")
+            jsonFilePath = os.path.join(folderPath, f"{job.upper()} by search at ({currentTimeString}).json")
             jobzaty = f"https://www.jobzaty.com/search_jobs?search={job}&country_id%5B%5D=191&page={page+1}"
             requestJobzaty = requests.get(jobzaty)
             htmlParser = BeautifulSoup(requestJobzaty.text, "html.parser")
@@ -152,11 +151,12 @@ def jobzatyCategory(
             .replace("-", " ")
             .upper()
         )
+
         job = categories[category]
         pages = int(input(f"Please choose number of pages for {categoryName}: "))
         i = 0
         jobData = []
-        jsonFilePath = os.path.join(folderPath, f"{categoryName} Category.json")
+        jsonFilePath = os.path.join(folderPath, f"{categoryName} Category at ({currentTimeString}).json")
         for page in range(pages):
             jobzaty = f"{job}?page={page+1}"
             requestJobzaty = requests.get(jobzaty)
@@ -212,3 +212,39 @@ def jobzatyCategory(
 
         with open(jsonFilePath, "w", encoding="utf-8") as Data:
             json.dump(jobData, Data, ensure_ascii=False)
+
+
+def jobzatyCompanies(companyPages: int = 1, folderPath: str = defaultPath):
+    jobData = []
+    if not os.path.exists(folderPath):
+        os.mkdir(folderPath)
+    jsonFilePath = os.path.join(folderPath, f"Companies data at ({currentTimeString}).json")
+    i=0
+    for page in range(1, companyPages + 1):
+        companies = f"https://www.jobzaty.com/companies?page={page+1}"
+        requestJobzaty = requests.get(companies)
+        htmlParser = BeautifulSoup(requestJobzaty.text, "html.parser")
+
+        for div in htmlParser("div", {"class": "compint"}):
+            companyImg = (
+                div.find("div", {"class": "imgwrap"}).find("img").get("src", "")
+            )
+            companyName = div.find("h2").text
+            companyLocation = div.find("div", {"class": "loctext"}).text
+            companyTotalJobs = div.find("div", {"class": "curentopen"}).text
+            companyUrl = div.find("h2").find("a").get("href", "")
+
+            jobData.append(
+                {
+                    i: {
+                        "Company name": companyName,
+                        "Company image": companyImg,
+                        "Company location": companyLocation,
+                        "Total jobs": companyTotalJobs,
+                        "Company URL": companyUrl,
+                    }
+                }
+            )
+
+    with open(jsonFilePath, "w", encoding="utf-8") as Data:
+        json.dump(jobData, Data, ensure_ascii=False)
