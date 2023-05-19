@@ -214,6 +214,126 @@ def jobzatyCategory(
             json.dump(jobData, Data, ensure_ascii=False)
 
 
+
+def jobzatyCity(
+    folderPath: str = defaultPath,
+):
+    if not os.path.exists(folderPath):  # create a folder to collect the json or photos
+        os.mkdir(folderPath)
+
+    cities: dict = {
+        "1": "https://www.jobzaty.com/jobs-in-ar-riyad",
+        "2": "https://www.jobzaty.com/jobs-in-khobar",
+        "3": "https://www.jobzaty.com/jobs-in-yanbu",
+        "4": "https://www.jobzaty.com/jobs-in-rabig",
+        "5": "https://www.jobzaty.com/jobs-in-at-taif",
+        "6": "https://www.jobzaty.com/jobs-in-al-kharj",
+        "7": "https://www.jobzaty.com/jobs-in-al-majmaah",
+        "8": "https://www.jobzaty.com/jobs-in-jeddah",
+        "9": "https://www.jobzaty.com/jobs-in-jubail",
+        "10": "https://www.jobzaty.com/jobs-in-al-madinah",
+        "11": "https://www.jobzaty.com/jobs-in-khamis-mushayt",
+        "12": "https://www.jobzaty.com/jobs-in-jizan",
+        "13": "https://www.jobzaty.com/jobs-in-qatif",
+        "14": "https://www.jobzaty.com/jobs-in-najran",
+        "15": "https://www.jobzaty.com/jobs-in-unayzah",
+        "16": "https://www.jobzaty.com/jobs-in-makkah",
+        "17": "https://www.jobzaty.com/jobs-in-neom",
+        "18": "https://www.jobzaty.com/jobs-in-buraydah",
+        "19": "https://www.jobzaty.com/jobs-in-al-ula",
+        "20": "https://www.jobzaty.com/jobs-in-tabuk",
+        "21": "https://www.jobzaty.com/jobs-in-hafar-al-batin",
+        "22": "https://www.jobzaty.com/jobs-in-al-bahah",
+        "23": "https://www.jobzaty.com/jobs-in-dammam",
+        "24": "https://www.jobzaty.com/jobs-in-dhahran",
+        "25": "https://www.jobzaty.com/jobs-in-al-hasa",
+        "26": "https://www.jobzaty.com/jobs-in-abha",
+        "27": "https://www.jobzaty.com/jobs-in-hail",
+        "28": "https://www.jobzaty.com/jobs-in-khafji",
+        "29": "https://www.jobzaty.com/jobs-in-abqaiq",
+        "30": "https://www.jobzaty.com/jobs-in-turayf",
+        "31": "https://www.jobzaty.com/jobs-in-unspecified",
+        "32": "https://www.jobzaty.com/jobs-in-remote",
+    }
+    chosenCity = input(
+        "\nPlease choose a category:\n1. Riyadh\n2. Khobar\n3. Yanbu\n4. Rabig\n5. At taif\n6. Al kharj\n7. Al majmaah\n8. Jeddah\n9. Jubail\n10. Al madinah\n11. Khamis Mushayt\n12.  Jizan\n13. Qatif\n14. Najran\n15. Unayzah\n16. Makkah\n17. NEOM\n18. Buraydah\n19. Al Ula\n20. Tabuk\n21. Hafar Al Batin\n22. Al Bahah\n23. Dammam\n24. Dhahran\n25. Al Hasa\n26. Abha\n27. Hail\n28. Khafji\n29. Abqaiq\n30. Turayf\n31. Unspecified\n32. remote\n\nSelect number/numbers separated by comma: "
+    ).split(", ")
+
+    for city in chosenCity:
+        if city not in cities:
+            print("Invalid choice. Please try again.")
+            return jobzatyCity()
+        cityName = (
+            str(cities.get(city))
+            .replace("https://www.jobzaty.com/jobs-in-", "")
+            .replace("https://www.jobzaty.com/", "")
+            .replace("-", " ")
+            .upper()
+        )
+
+        job = cities[city]
+        pages = int(input(f"Please choose number of pages for {cityName}: "))
+        i = 0
+        jobData = []
+        jsonFilePath = os.path.join(folderPath, f"{cityName} Category at ({currentTimeString}).json")
+        for page in range(pages):
+            jobzaty = f"{job}?page={page+1}"
+            requestJobzaty = requests.get(jobzaty)
+            htmlParser = BeautifulSoup(requestJobzaty.text, "html.parser")
+            for div in htmlParser.find_all("div", {"class": "jobint"}):
+                i += 1
+                title = div.find("a")["title"]
+                jobLink = div.find("a")["href"]
+                img = div.find("img")
+                companyName = div.find("div", {"class": "company"})
+
+                requestWebPageData = requests.get(jobLink)
+                htmlWebPageDataParser = BeautifulSoup(
+                    requestWebPageData.text, "html.parser"
+                )
+                header = htmlWebPageDataParser.find_all("div", {"class": "jobinfo"})
+                announcementDate = header[0].find("div", {"class": "ptext"})
+                jobDetailsHeader = htmlWebPageDataParser.find(
+                    "div", {"class": "job-header one"}
+                )
+                jobDetails = jobDetailsHeader.find("ul", {"class": "jbdetail"})
+                getJobDetails = extract_job_details(jobDetails.text)
+
+                pageContent = htmlWebPageDataParser.find("div", {"class": "contentbox"})
+
+                plainPageContent = pageContent.find("p")
+                jobs = [job for job in pageContent.text.split("\n") if job != ""]
+
+                applicationMethod = plainPageContent.find("a", {"rel": "nofollow"})[
+                    "href"
+                ]
+
+                jobData.append(
+                    {
+                        "Job location": cityName,
+                        "Link": job,
+                        "Job data": {
+                            f"job {i}": {
+                                "Job title": title,
+                                "Job link": jobLink,
+                                "img": img["src"],
+                                "Company name": companyName.text.rstrip(),
+                                "Announcement date": announcementDate.text,
+                                "Application method": applicationMethod,
+                                "Job details": getJobDetails,
+                                "Web page data": {
+                                    "Extra details": jobs,
+                                },
+                            },
+                        },
+                    }
+                )
+
+        with open(jsonFilePath, "w", encoding="utf-8") as Data:
+            json.dump(jobData, Data, ensure_ascii=False)
+
+
+
 def jobzatyCompanies(companyPages: int = 1, folderPath: str = defaultPath):
     jobData = []
     if not os.path.exists(folderPath):
