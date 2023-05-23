@@ -9,6 +9,7 @@ setup(
     version='0.0.1',
     long_description=long_description, 
     author='Mohammed Alsali',
+    url='https://github.com/MohammedSaudAlsahli',
     packages=['jobscraper'],
     license='MIT',
 )
