@@ -1,0 +1,7 @@
+setup.py
+jobs_scraper.egg-info/PKG-INFO
+jobs_scraper.egg-info/SOURCES.txt
+jobs_scraper.egg-info/dependency_links.txt
+jobs_scraper.egg-info/top_level.txt
+jobscraper/__init__.py
+jobscraper/searchforjobs.py
