@@ -5,11 +5,9 @@
 
 ``` 
 pip install requests
-```
-``` 
+ 
 pip install bs4
-```
-```
+
 pip intall git+https://github.com/MohammedSaudAlsahli/JobScraper.git
 ```
 #
