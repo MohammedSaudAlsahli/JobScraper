@@ -30,6 +30,7 @@ def extract_job_details(jobDetails):
     return job_details
 
 
+
 def jobzatySearch(
     query: list,
     pages: int = 1,
