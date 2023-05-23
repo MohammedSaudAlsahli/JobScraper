@@ -23,7 +23,7 @@ pip intall git+https://github.com/MohammedSaudAlsahli/JobScraper.git
 import jobscraper
 
 path = '/path/to/folder'
-keywords = ['hr', 'cyper', 'أسنان']
+keywords = ['hr', 'cybersecurity', 'أسنان']
 jobscraper.jobzatySearch(keywords, 1, folderPath=path)
 
 # first part is search query, can be in english or arabic, the second part is how many pages do you want, by default will be one page.
