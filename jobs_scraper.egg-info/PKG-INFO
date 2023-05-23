@@ -6,20 +6,31 @@ License: MIT
 
 # تم كتابة هذه الأداة لغرض التعلم فقط.
 
+### كيف يتم تحميلها؟ 
+
+
+``` 
+pip install requests
+``` 
+``` 
+pip install bs4
+``` 
+``` 
+pip intall git+https://github.com/MohammedSaudAlsahli/JobScraper.git
+```
+#
+
 ### كيف يتم استعمالها؟
 
 يوجد حالياً موقع واحد وخيارين للبحث
-
-#
-
 ## الخيار الأول عن طريق البحث بالموقع:
 
 ```py
-import searchforjobs
+import jobscraper
 
 path = '/path/to/folder'
-keywords = ['hr', 'cyper', 'أسنان']
-searchfrojobs.jobzatySearch(keywords, 1, folderPath=path)
+keywords = ['hr', 'cybersecurity', 'أسنان']
+jobscraper.jobzatySearch(keywords, 1, folderPath=path)
 
 # first part is search query, can be in english or arabic, the second part is how many pages do you want, by default will be one page.
 # the output will be json format in desktop by default, or use your own path.
@@ -187,10 +198,10 @@ searchfrojobs.jobzatySearch(keywords, 1, folderPath=path)
 ## الخيار الثاني عن طريق البحث داخل التصنيفات الخاصة بموقع جوبذاتي المكون من 32 تصنيف:
 
 ```py
-import searchforjobs
+import jobscraper
 
 path = '/path/to/folder'
-searchfrojobs.jobzatyCategory(folderPath=path)
+jobscraper.jobzatyCategory(folderPath=path)
 
 # action will be in terminal, chose a number or more reference to a category, then select a number for pages.
 # the output will be json format in desktop by default, or use your own path.
