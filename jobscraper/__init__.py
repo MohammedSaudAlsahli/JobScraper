@@ -1,1 +1,1 @@
-from jobscraper.searchforjobs import jobzaty
+from .searchforjobs import jobzaty
