@@ -1,22 +1,25 @@
 # تم كتابة هذه الأداة لغرض التعلم فقط.
 
-### كيف يتم تحميلها؟ 
+### كيف يتم تحميلها؟
 
-
-``` 
-pip install requests
-``` 
-``` 
-pip install bs4
-``` 
-``` 
-pip intall git+https://github.com/MohammedSaudAlsahli/JobScraper.git
 ```
+pip install requests
+```
+
+```
+pip install bs4
+```
+
+```
+pip install git+https://github.com/MohammedSaudAlsahli/JobScraper.git
+```
+
 #
 
 ### كيف يتم استعمالها؟
 
 يوجد حالياً موقع واحد وخيارين للبحث
+
 ## الخيار الأول عن طريق البحث بالموقع:
 
 ```py
